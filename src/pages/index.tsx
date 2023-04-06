@@ -1,11 +1,49 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from 'next/font/google'
-import styles from '@/styles/Home.module.css'
+import Head from "next/head";
+import { useState } from "react";
+import { Inter } from "next/font/google";
+import { Layout } from "@/global/Layout";
+import { Input } from "@/components/common/Input";
+import styled from "styled-components";
+import { Button } from "@/components/common/Button";
+import axios from "axios";
+import { useRouter } from "next/router";
+import { Label } from "@/components/common/Label";
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+  const router = useRouter();
+  const [apiKey, setApiKey] = useState<string>("");
+  console.log(apiKey);
+  const chatAi = async (data?: string) => {
+    try {
+      // axios를 이용해서 chatgpt와 통신
+      const pos = await axios.post(
+        "https://api.openai.com/v1/completions",
+        // docs복사 prompt에 내가 한 질문 입력
+        {
+          model: "text-davinci-003",
+          prompt: ``,
+          temperature: 0.9,
+          max_tokens: 521,
+          top_p: 1,
+          frequency_penalty: 0,
+          presence_penalty: 0.6,
+          stop: [" Human:", " AI:"],
+        },
+        // 발급받은 api키 env로 입력
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        }
+      );
+      router.push("join");
+    } catch (error) {
+      alert("올바르지않은 API KEY입니다!");
+      console.log(error);
+    }
+  };
   return (
     <>
       <Head>
@@ -14,110 +52,35 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>src/pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
+      <Layout>
+        <svg
+          style={{ margin: "200px 0px 130px 0px" }}
+          width="108"
+          height="104"
+          viewBox="0 0 108 104"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M105.823 0V58.9208L0.0898438 0V4.17033V44.3842V104H1.3566V45.0991L107.09 104V100.326V59.6158V0H105.823Z"
+            fill="#26D9FD"
           />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
-          </div>
-        </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+        </svg>
+        <Label>API KEY</Label>
+        <Input
+          placeholder="API KEY를 입력해주세요"
+          onChange={(e) => setApiKey(e.target.value)}
+        />
+        <Button onClick={() => chatAi()}>Login</Button>
+        <StyledBottomTxt>KEY 발급받는 방법</StyledBottomTxt>
+      </Layout>
     </>
-  )
+  );
 }
+
+const StyledBottomTxt = styled.div`
+  position: absolute;
+  bottom: 50px;
+  text-decoration: underline;
+  font-size: 14px;
+`;
