@@ -6,7 +6,7 @@ import axios from "axios";
 import { Input } from "@/components/common/Input";
 
 export default function Room() {
-  const apiKey = "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";
+  const apiKey = "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";
 
   const [stop, setStop] = useState<boolean>(false);
   const [mine, setMine] = useState<string>("");
@@ -127,12 +127,10 @@ const StyledChatContainer = styled.div`
 
 const StyledMessageBox = styled.div`
   width: 100%;
-  height: 50px;
-  padding: 40px 20px;
+  padding: 10px 20px;
   display: flex;
   flex-direction: row;
   justify-content: start;
-  align-items: center;
   &.d {
     flex-direction: row-reverse;
     justify-content: end;
@@ -143,6 +141,9 @@ const StyledMessage = styled.div`
   padding: 10px;
   border-radius: 10px;
   max-width: 200px;
+  max-height: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   background-color: gray;
   margin: 0px 20px;
 `;
