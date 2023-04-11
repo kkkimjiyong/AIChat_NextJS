@@ -4,17 +4,47 @@ import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import axios from "axios";
 import { Input } from "@/components/common/Input";
+import { useRouter } from "next/router";
 
-export default function Room() {
-  const apiKey = "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";
-
+export default function Room({ data }: { data: any }) {
+  const router = useRouter();
+  const apiKey = "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";
   const [stop, setStop] = useState<boolean>(false);
   const [mine, setMine] = useState<string>("");
-  const [messages, setMessages] = useState<any>([]);
+  const [messages, setMessages] = useState<any>(data.roommessages);
+  console.log(messages);
+  const createProfile = (number: any, roompeople: string) => {
+    if (number + 1 <= roompeople) {
+      return String(number + 1);
+    } else {
+      return "0";
+    }
+  };
+  const postMessage = async (payload: any) => {
+    console.log(payload);
+    const json_Payload = JSON.stringify([...payload]);
+    console.log(json_Payload);
+    try {
+      const response = await axios.post("/api/postMessage", {
+        roomid: data.roomid,
+        message: json_Payload,
+      });
+      console.log("바뀜");
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-  const chatAi = async (type: string) => {
+  const chatAi = async (type: string, message?: any) => {
+    setMessages([...messages, message]);
+    const LastMessage = [...messages, message];
     let prompt = "";
     const lastMessage = messages.at(-1);
+    const aiProfile = createProfile(
+      messages.at(-1).profile || 0,
+      data.roompeople
+    );
     const ai = type === "ai";
     if (ai) {
       prompt = lastMessage;
@@ -49,28 +79,37 @@ export default function Room() {
         }
       );
       setStop(false);
-      setMessages((prev: any) => prev.concat(pos.data.choices[0].text));
+      console.log("마지막~~~~~~~~~~~~~~~~~~~~", LastMessage);
+      console.log(typeof pos.data.choices[0].text);
+      setMessages(() => [
+        ...LastMessage,
+        { profile: aiProfile, message: pos.data.choices[0].text },
+      ]);
+      postMessage([
+        ...LastMessage,
+        { profile: aiProfile, message: pos.data.choices[0].text },
+      ]);
     } catch (error) {
       alert("올바르지않은 API KEY입니다!");
       console.log(error);
     }
   };
 
-  useEffect(() => {
-    if (messages.length !== 0 && !stop) {
-      chatAi("ai");
-    }
-  }, [messages, stop]);
+  // useEffect(() => {
+  //   if (messages.length !== 0 && !stop) {
+  //     chatAi("ai");
+  //   }
+  // }, [messages, stop]);
 
   return (
     <Layout>
       <StyledWrap>
         <StyledChatContainer>
-          {messages.map((el: any) => {
+          {messages?.map((el: any, idx: number) => {
             return (
-              <StyledMessageBox key={el}>
+              <StyledMessageBox key={idx}>
                 <Profile />
-                <StyledMessage>{el}</StyledMessage>
+                <StyledMessage>{el.message}</StyledMessage>
               </StyledMessageBox>
             );
           })}
@@ -84,7 +123,14 @@ export default function Room() {
             onChange={(e) => setMine(e.target.value)}
           />
           <svg
-            onClick={() => chatAi("human")}
+            onClick={() => {
+              postMessage([...messages, { profile: "me", message: mine }]);
+              // setMessages(() => [
+              //   ...messages,
+              //   { profile: "me", message: mine },
+              // ]);
+              chatAi("human", { profile: "me", message: mine });
+            }}
             style={{ position: "absolute", right: "40px", bottom: "2px" }}
             width="25"
             height="41"
@@ -154,3 +200,10 @@ const StyledInputBox = styled.div`
   display: flex;
   justify-content: center;
 `;
+export async function getServerSideProps(context: any) {
+  const { roomid } = context.query;
+  const res = await axios.get(`http://localhost:3000/api/getMessage/${roomid}`);
+  const data = res.data;
+
+  return { props: { data } };
+}
