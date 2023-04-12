@@ -8,7 +8,7 @@ import { useRouter } from "next/router";
 
 export default function Room({ data }: { data: any }) {
   const router = useRouter();
-  const apiKey = "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";
+  const apiKey = process.env.APIKEY;
   const [stop, setStop] = useState<boolean>(false);
   const [mine, setMine] = useState<string>("");
   const [messages, setMessages] = useState<any>(data.roommessages);
@@ -173,12 +173,10 @@ const StyledChatContainer = styled.div`
 
 const StyledMessageBox = styled.div`
   width: 100%;
-  height: 50px;
-  padding: 40px 20px;
+  padding: 10px 20px;
   display: flex;
   flex-direction: row;
   justify-content: start;
-  align-items: center;
   &.d {
     flex-direction: row-reverse;
     justify-content: end;
@@ -189,6 +187,9 @@ const StyledMessage = styled.div`
   padding: 10px;
   border-radius: 10px;
   max-width: 200px;
+  max-height: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   background-color: gray;
   margin: 0px 20px;
 `;
